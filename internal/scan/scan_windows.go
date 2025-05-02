@@ -8,6 +8,8 @@ import (
 	"scanpath/internal/tbl"
 	"syscall"
 	"time"
+
+	"golang.org/x/sys/windows"
 )
 
 func ScanDirectory(path string, limit int, sortColumn, sortOrder string, filterString string) error {
@@ -24,16 +26,13 @@ func ScanDirectory(path string, limit int, sortColumn, sortOrder string, filterS
 			continue
 		}
 		ctime := getWindowsCreationTime(info)
-		// To implement: use Windows API for real owner
-		owner := "N/A"
+		owner := getFileOwner(path + `\` + info.Name())
 		size := info.Size()
 		sizeParsed := tbl.ByteCountIEC(size)
 
 		row := []string{
 			info.Name(),
-			// Size in bytes
 			fmt.Sprintf("%d", size),
-			// Human-readable size
 			sizeParsed,
 			ctime,
 			info.ModTime().Format("2006-01-02 15:04:05"),
@@ -74,4 +73,24 @@ func getWindowsCreationTime(info os.FileInfo) string {
 		return t.Format("2006-01-02 15:04:05")
 	}
 	return "N/A"
+}
+
+func getFileOwner(path string) string {
+	sd, err := windows.GetNamedSecurityInfo(
+		path,
+		windows.SE_FILE_OBJECT,
+		windows.OWNER_SECURITY_INFORMATION,
+	)
+	if err != nil {
+		return "N/A"
+	}
+	owner, _, err := sd.Owner()
+	if err != nil {
+		return "N/A"
+	}
+	account, domain, _, err := owner.LookupAccount("")
+	if err != nil {
+		return "N/A"
+	}
+	return domain + `\` + account
 }
