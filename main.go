@@ -18,7 +18,7 @@ type CLI struct {
 func main() {
 	var cli CLI
 	kong.Parse(&cli,
-		kong.Name("dirscan"),
+		kong.Name("scanpath"),
 		kong.Description("Scan a directory and list items with metadata."),
 	)
 
