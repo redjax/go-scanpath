@@ -1,6 +1,7 @@
 package tbl
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -23,6 +24,11 @@ func parseTime(s string) (time.Time, error) {
 }
 
 func SortResults(results [][]string, column, order string) {
+	// If user asks for sizeparsed, sort by size instead
+	if column == "sizeparsed" {
+		column = "size"
+	}
+
 	idx, ok := columnIndices[strings.ToLower(column)]
 	if !ok {
 		idx = 0 // Default to "name"
@@ -56,4 +62,30 @@ func SortResults(results [][]string, column, order string) {
 		}
 		return la < lb
 	})
+}
+
+func ByteCountSI(b int64) string {
+	const unit = 1000
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(b)/float64(div), "kMGTPE"[exp])
+}
+
+func ByteCountIEC(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
 }

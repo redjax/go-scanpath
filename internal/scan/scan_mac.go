@@ -25,10 +25,15 @@ func ScanDirectory(path string, limit int, sortColumn, sortOrder string) error {
 			continue
 		}
 		ctime, owner := getDarwinMeta(info)
+		size := info.Size()
+		sizeParsed := tbl.ByteCountIEC(size)
 
 		row := []string{
 			info.Name(),
-			fmt.Sprintf("%d", info.Size()),
+			// Size in bytes
+			fmt.Sprintf("%d", size),
+			// Human-readable size
+			sizeParsed,
 			ctime,
 			info.ModTime().Format("2006-01-02 15:04:05"),
 			owner,
