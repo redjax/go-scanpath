@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ScanDirectory(path string, limit int, sortColumn, sortOrder string) error {
+func ScanDirectory(path string, limit int, sortColumn, sortOrder string, filterString string) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
@@ -49,6 +49,20 @@ func ScanDirectory(path string, limit int, sortColumn, sortOrder string) error {
 
 	// Sort the table before printing
 	tbl.SortResults(results, sortColumn, sortOrder)
+	// Parse and apply filter before sorting/printing
+	var filterExpr *tbl.FilterExpr
+	if filterString != "" {
+		var err error
+		filterExpr, err = tbl.ParseFilter(filterString)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid filter: %v\n", err)
+			// Optionally return err or continue without filtering
+		}
+	}
+	results = tbl.ApplyFilter(results, filterExpr)
+
+	tbl.SortResults(results, sortColumn, sortOrder)
+
 	tbl.PrintScanResultsTable(results)
 
 	return nil

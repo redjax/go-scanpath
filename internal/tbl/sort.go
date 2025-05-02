@@ -8,16 +8,6 @@ import (
 	"time"
 )
 
-// Map column names to indices
-var columnIndices = map[string]int{
-	"name":        0,
-	"size":        1,
-	"created":     2,
-	"modified":    3,
-	"owner":       4,
-	"permissions": 5,
-}
-
 // Helper: parse time in your format
 func parseTime(s string) (time.Time, error) {
 	return time.Parse("2006-01-02 15:04:05", s)
