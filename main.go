@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"scanpath/internal/scan"
 
 	"github.com/alecthomas/kong"
 )
@@ -18,7 +19,7 @@ func main() {
 		kong.Description("Scan a directory and list items with metadata."),
 	)
 
-	err := scanDirectory(cli.ScanPath, cli.Limit)
+	err := scan.ScanDirectory(cli.ScanPath, cli.Limit)
 	if err != nil {
 		log.Fatal(err)
 	}

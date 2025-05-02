@@ -1,21 +1,22 @@
 //go:build windows
 
-package main
+package scan
 
 import (
 	"fmt"
 	"os"
+	"scanpath/internal/tbl"
 	"syscall"
 	"time"
 )
 
-func scanDirectory(path string, limit int) error {
+func ScanDirectory(path string, limit int) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%-30s %10s  %20s  %20s  %-10s  %s\n", "Name", "Size", "Created", "Modified", "Owner", "Permissions")
+	var results [][]string
 	count := 0
 	for _, entry := range entries {
 		info, err := entry.Info()
@@ -25,19 +26,21 @@ func scanDirectory(path string, limit int) error {
 		ctime := getWindowsCreationTime(info)
 		owner := "N/A" // To implement: use Windows API for real owner
 
-		fmt.Printf("%-30s %10d  %20s  %20s  %-10s  %s\n",
+		row := []string{
 			info.Name(),
-			info.Size(),
+			fmt.Sprintf("%d", info.Size()),
 			ctime,
 			info.ModTime().Format("2006-01-02 15:04:05"),
 			owner,
-			info.Mode(),
-		)
+			info.Mode().String(),
+		}
+		results = append(results, row)
 		count++
 		if limit > 0 && count >= limit {
 			break
 		}
 	}
+	tbl.PrintScanResultsTable(results)
 	return nil
 }
 

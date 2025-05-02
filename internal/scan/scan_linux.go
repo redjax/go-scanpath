@@ -1,53 +1,55 @@
-//go:build darwin
+//go:build linux
 
-package main
+package scan
 
 import (
 	"fmt"
 	"os"
 	"os/user"
+	"scanpath/internal/tbl"
 	"syscall"
 	"time"
 )
 
-func scanDirectory(path string, limit int) error {
+func ScanDirectory(path string, limit int) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%-30s %10s  %20s  %20s  %-10s  %s\n", "Name", "Size", "Created", "Modified", "Owner", "Permissions")
+	var results [][]string
 	count := 0
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
 			continue
 		}
-		ctime, owner := getDarwinMeta(info)
+		ctime, owner := getLinuxMeta(info)
 
-		fmt.Printf("%-30s %10d  %20s  %20s  %-10s  %s\n",
+		row := []string{
 			info.Name(),
-			info.Size(),
+			fmt.Sprintf("%d", info.Size()),
 			ctime,
 			info.ModTime().Format("2006-01-02 15:04:05"),
 			owner,
-			info.Mode(),
-		)
+			info.Mode().String(),
+		}
+		results = append(results, row)
 		count++
 		if limit > 0 && count >= limit {
 			break
 		}
 	}
+	tbl.PrintScanResultsTable(results)
 	return nil
 }
 
-func getDarwinMeta(info os.FileInfo) (ctime string, owner string) {
+func getLinuxMeta(info os.FileInfo) (ctime string, owner string) {
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {
 		return "N/A", "N/A"
 	}
-	// Use Birthtimespec for creation time if available
-	t := time.Unix(stat.Birthtimespec.Sec, stat.Birthtimespec.Nsec)
+	t := time.Unix(stat.Ctim.Sec, stat.Ctim.Nsec)
 	ctime = t.Format("2006-01-02 15:04:05")
 
 	uid := fmt.Sprint(stat.Uid)
