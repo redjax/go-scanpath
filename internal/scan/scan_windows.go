@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func ScanDirectory(path string, limit int) error {
+func ScanDirectory(path string, limit int, sortColumn, sortOrder string) error {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
@@ -40,7 +40,11 @@ func ScanDirectory(path string, limit int) error {
 			break
 		}
 	}
+
+	// Sort the table before printing
+	tbl.SortResults(results, sortColumn, sortOrder)
 	tbl.PrintScanResultsTable(results)
+
 	return nil
 }
 

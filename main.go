@@ -8,8 +8,10 @@ import (
 )
 
 type CLI struct {
-	ScanPath string `short:"s" long:"scan-path" help:"Directory path to scan." default:"." type:"existingdir"`
-	Limit    int    `short:"l" long:"limit-results" help:"Limit the number of results (0 = unlimited)." default:"0"`
+	ScanPath string `short:"p" long:"path" help:"Directory path to scan." default:"." type:"existingdir"`
+	Limit    int    `short:"l" long:"limit" help:"Limit the number of results (0 = unlimited)." default:"0"`
+	Sort     string `short:"s" long:"sort" help:"Column to sort by (name, size, created, modified, owner, permissions)" default:"name"`
+	Order    string `short:"o" long:"order" help:"Sort order: asc or desc" default:"asc"`
 }
 
 func main() {
@@ -19,7 +21,7 @@ func main() {
 		kong.Description("Scan a directory and list items with metadata."),
 	)
 
-	err := scan.ScanDirectory(cli.ScanPath, cli.Limit)
+	err := scan.ScanDirectory(cli.ScanPath, cli.Limit, cli.Sort, cli.Order)
 	if err != nil {
 		log.Fatal(err)
 	}
